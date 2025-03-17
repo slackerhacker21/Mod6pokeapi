@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pokémon Search</title>
+    <style>
+        .hidden {
+            display: none;
+        }
+        #pokemon-info {
+            text-align: center;
+        }
+        #pokemon-image {
+            max-width: 200px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Pokémon Search</h1>
+    <input type="text" id="pokemon-input" placeholder="Enter Pokémon name or ID">
+    <button id="search-button">Search</button>
+    <div id="pokemon-info" class="hidden">
+        <p id="pokemon-name"></p>
+        <img id="pokemon-image" src="" alt="">
+        <!-- Uncomment the line below for the bonus to display Pokémon type -->
+        <!-- <p id="pokemon-type"></p> -->
+    </div>
+    <p id="error-message" class="hidden"></p>
+
+    <script>
+        // Select DOM elements
+        const inputElement = document.getElementById('pokemon-input');
+        const searchButton = document.getElementById('search-button');
+        const resultDiv = document.getElementById('pokemon-info');
+        const nameElement = document.getElementById('pokemon-name');
+        const imageElement = document.getElementById('pokemon-image');
+        const errorElement = document.getElementById('error-message');
+        // Uncomment for bonus: const typeElement = document.getElementById('pokemon-type');
+
+        // Add event listener to the search button
+        searchButton.addEventListener('click', searchPokemon);
+
+        // Async function to search for Pokémon
+        async function searchPokemon() {
+            const inputValue = inputElement.value.trim();
+            // Hide result and error elements initially
+            resultDiv.classList.add('hidden');
+            errorElement.classList.add('hidden');
+
+            // Check for empty input
+            if (inputValue === '') {
+                showError('Please enter a Pokémon name or ID.');
+                return;
+            }
+
+            try {
+                // Fetch data from PokeAPI
+                const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${inputValue.toLowerCase()}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    const name = capitalize(data.name);
+                    // Update DOM with Pokémon data
+                    nameElement.textContent = name;
+                    imageElement.src = data.sprites.front_default;
+                    imageElement.alt = name;
+                    // Uncomment for bonus: Display Pokémon type
+                    // const types = data.types.map(typeInfo => typeInfo.type.name).join(', ');
+                    // typeElement.textContent = `Type: ${types}`;
+                    // Show the result
+                    resultDiv.classList.remove('hidden');
+                } else {
+                    // Handle HTTP errors
+                    if (response.status === 404) {
+                        showError('Pokémon not found.');
+                    } else {
+                        showError('An error occurred. Please try again.');
+                    }
+                }
+            } catch (error) {
+                // Handle network or other errors
+                showError('Failed to fetch data. Please check your connection.');
+            }
+        }
+
+        // Function to display error messages
+        function showError(message) {
+            errorElement.textContent = message;
+            errorElement.classList.remove('hidden');
+        }
+
+        // Function to capitalize the first letter of a string
+        function capitalize(str) {
+            return str.charAt(0).toUpperCase() + str.slice(1);
+        }
+    </script>
+</body>
+</html>
